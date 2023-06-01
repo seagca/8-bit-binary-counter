@@ -1,46 +1,64 @@
-const canvas = document.getElementById('counter-display');
-const context = canvas.getContext('2d');
-let counterValue = [0, 0, 0, 0, 0, 0, 0, 0];
+// Get the necessary elements from the DOM
+var binaryCounterDisplay = document.getElementById('counter');
+var decimalCounterDisplay = document.getElementById('decimal-counter');
+var startButton = document.getElementById('startBtn');
+var stopButton = document.getElementById('stopBtn');
+var resetButton = document.getElementById('resetBtn');
 
-function updateCounter() {
-    // Clear the canvas
-    context.clearRect(0, 0, canvas.width, canvas.height);
+// Initialize the count and interval ID
+var count = 0;
+var intervalId = null;
 
-    // Draw the counter value
-    const binaryString = counterValue.join('');
-    context.font = '48px Arial';
-    context.fillText(binaryString, 10, 60);
-}
-
-function incrementCounter() {
-    let carry = 1; // Initial carry value
-
-    for (let i = counterValue.length - 1; i >= 0; i--) {
-        counterValue[i] += carry;
-        if (counterValue[i] > 1) {
-            counterValue[i] = 0;
-            carry = 1; // Carry over to the next bit
-        } else {
-            carry = 0;
-            break; // No carry, exit the loop
-        }
+// Function to convert count to 8-bit binary
+function convertToBinary(count) {
+    var binary = count.toString(2);
+    // Pad the binary representation with leading zeros
+    while (binary.length < 8) {
+        binary = '0' + binary;
     }
-
-    updateCounter();
+    return binary;
 }
 
+// Function to update the counter displays
+function updateCounterDisplays() {
+    binaryCounterDisplay.textContent = convertToBinary(count);
+    decimalCounterDisplay.textContent = count;
+}
+
+// Function to start the counter
+function startCounter() {
+    intervalId = setInterval(incrementCount, 1000);
+    startButton.disabled = true;
+    stopButton.disabled = false;
+}
+
+// Function to stop the counter
+function stopCounter() {
+    clearInterval(intervalId);
+    startButton.disabled = false;
+    stopButton.disabled = true;
+}
+
+// Function to reset the counter
 function resetCounter() {
-    counterValue = [0, 0, 0, 0, 0, 0, 0, 0];
-    updateCounter();
+    stopCounter();
+    count = 0;
+    updateCounterDisplays();
 }
 
-// Update the counter initially
-updateCounter();
+// Function to increment the count
+function incrementCount() {
+    count++;
+    if (count > 255) {
+        count = 0; // Reset count if it exceeds 8 bits
+    }
+    updateCounterDisplays();
+}
 
-// Add event listener to the increment button
-const incrementButton = document.getElementById('increment-button');
-incrementButton.addEventListener('click', incrementCounter);
-
-// Add event listener to the reset button
-const resetButton = document.getElementById('reset-button');
+// Event listeners for the buttons
+startButton.addEventListener('click', startCounter);
+stopButton.addEventListener('click', stopCounter);
 resetButton.addEventListener('click', resetCounter);
+
+// Initial display
+updateCounterDisplays();
